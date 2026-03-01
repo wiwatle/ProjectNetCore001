@@ -1,17 +1,29 @@
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+name: .NET Core CI/CD # Name of the workflow
 
-trigger:
-- master
+on:
+  push:
+    branches: [ master ] # Triggers on pushes to the main branch
+  pull_request:
+    branches: [ master ] # Triggers on pull requests to the main branch
 
-pool:
-  vmImage: windows-latest
+jobs:
+  build:
+    runs-on: ubuntu-latest # Specifies the runner environment
 
-variables:
-  buildConfiguration: 'Release'
+    steps:
+    - uses: [actions/checkout@v4](https://github.com) # Step to check out your repository code
+    - name: Setup .NET
+      uses: [actions/setup-dotnet@v4](https://github.com/actions/setup-dotnet) # Action to set up the .NET environment
+      with:
+        dotnet-version: '8.0.x' # Specify the desired .NET SDK version
 
-steps:
-- script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration)'
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build project
+      run: dotnet build --no-restore
+
+    - name: Run tests
+      run: dotnet test --no-build
+
+    # Add deployment steps here as additional jobs or steps, e.g., to Azure App Service, AWS, or Docker Hub.
